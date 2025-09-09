@@ -1,0 +1,166 @@
+
+
+ ✅ Corrections & Feedback
+
+ 🔹 Beginner Level
+
+1. Contacts with last name Smith
+
+
+SELECT Id, LastName 
+FROM Contact 
+WHERE LastName = 'Smith'
+
+
+✔️ You had a typo (`slect` → `SELECT`).
+
+2. Accounts created in last 30 days
+
+
+SELECT Id, Name 
+FROM Account 
+WHERE CreatedDate = LAST_N_DAYS30
+
+
+✔️ SOQL uses `=` with date literals (not `` inside).
+
+3. Accounts starting with “A”
+
+
+SELECT Name, Phone 
+FROM Account 
+WHERE Name LIKE 'A%'
+
+
+✔️ `%A` means “ends with A”. If you want “starts with A”, use `A%`.
+
+---
+
+ 🔹 Intermediate Level
+
+4. Opportunities  100,000 and Open
+
+
+SELECT Id, Name, Amount 
+FROM Opportunity 
+WHERE Amount  100000 
+AND IsClosed = FALSE
+
+
+✔️ Better to use `IsClosed = FALSE` instead of assuming StageName = 'Open'.
+
+5. Contacts under “Acme Corp”
+
+
+SELECT Id, LastName 
+FROM Contact 
+WHERE Account.Name = 'Acme Corp'
+
+
+✔️ Perfect ✅
+
+6. Accounts with at least one Opportunity
+
+
+SELECT Id, Name 
+FROM Account 
+WHERE Id IN (SELECT AccountId FROM Opportunity)
+
+
+✔️ You don’t need `GROUP BY` or `HAVING =1` — `IN` already ensures at least one child exists.
+
+7. Accounts with no Opportunities
+
+
+SELECT Id, Name 
+FROM Account 
+WHERE Id NOT IN (SELECT AccountId FROM Opportunity)
+
+
+✔️ Correct ✅
+
+8. Top 10 Opportunities by Amount
+
+
+SELECT Id, Name, Amount 
+FROM Opportunity 
+ORDER BY Amount DESC 
+LIMIT 10
+
+
+✔️ Add `DESC` so it shows largest first.
+
+---
+
+ 🔹 Advanced Level
+
+9. Top 5 Accounts by total Opportunity Amount
+
+
+SELECT AccountId, Account.Name, SUM(Amount) totalAmount
+FROM Opportunity
+GROUP BY AccountId, Account.Name
+ORDER BY totalAmount DESC
+LIMIT 5
+
+
+✔️ Needs `SUM(Amount)` for totals. Your version grouped by AccountId but didn’t SUM.
+
+10. Accounts with ≥ 3 Opportunities
+
+
+SELECT AccountId, Account.Name, COUNT(Id) oppCount
+FROM Opportunity
+GROUP BY AccountId, Account.Name
+HAVING COUNT(Id) = 3
+
+
+✔️ Must be written on Opportunity, since only child objects can be grouped.
+
+11. Largest Opportunity per Account
+👉 SOQL alone can’t return just the largest per group — you can only do this in Apex or using a subquery per Account
+
+
+SELECT Id, Name,
+   (SELECT Id, Name, Amount 
+    FROM Opportunities 
+    ORDER BY Amount DESC 
+    LIMIT 1)
+FROM Account
+
+
+✔️ Your query was invalid because `GROUP BY` and `ORDER BY LIMIT` don’t mix this way.
+
+12. Opportunities closed in last 90 days, grouped by Stage
+
+
+SELECT StageName, COUNT(Id) oppCount
+FROM Opportunity
+WHERE CloseDate = LAST_N_DAYS90
+GROUP BY StageName
+
+
+✔️ Needs `COUNT(Id)` with `GROUP BY`.
+
+13. Cases with related Contact Name
+
+
+SELECT Id, CaseNumber, Contact.Name 
+FROM Case
+
+
+✔️ Use `Contact.Name`, not `contact.lastname` only.
+
+14. Accounts with top 2 Opportunities by Amount
+
+
+SELECT Id, Name,
+   (SELECT Id, Name, Amount 
+    FROM Opportunities 
+    ORDER BY Amount DESC 
+    LIMIT 2)
+FROM Account
+
+
+✔️ Fixed typo (`opporunties` → `Opportunities`).
+
